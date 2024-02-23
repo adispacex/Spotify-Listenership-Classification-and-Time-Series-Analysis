@@ -123,15 +123,6 @@ I will be showing the results from a few of my best models in a moment but befor
 - A higher recall means we are going to assume that *more tracks will turn up positive for popularity*. This gives us a higher rate of *false positives*. This may lead our business associates to invest in the wrong features and, ultimately, the wrong artists which could cause a long-term loss for them.
 - On the other hand, a *higher precision means our model's threshold for what it will consider a prediction of popularity will be higher*. This gives us a higher rate of *false negatives* as some songs with feature prevalence that would accurately predict popularity may not be noted as such by the model. This may result in an increased amount of frustrated & annoyed artists however it does not put the record label in danger of losing money. A high precision is what we will aim for--this will be particularly effective for those executives who are looking to take less risk. 
 
-## Visualizing the Best Models:
-
-### Grid-Searched Random Forest on All Columns: 
-
-![confusion_matrix_gs_all](/readme_images/grid_search_ran_forest.jpg)
-
-![gs_all_AUC](/readme_images/auc_gs_ran_for.png)
-
-![gs_all_top_feats](/readme_images/important_feats_gs_ran_for.png)
 
 **Analysis:**
 
@@ -196,12 +187,9 @@ I created helper functions for:
 
 After reading in the data, my first task was to create two new dataframes: one that would have the yearly average of the four most popular features and one that would have the yearly average of the four most niche features.  
 
-![new_df](/readme_images/new_df.jpg)
 
 When I plotted the initial time series of the new dataframes, it became clear very quickly that normalization would be necessary. The loudness column had measurements at a very different scale than energy, valence, and acousticness. This disparity made the initial time series very difficult to read. Take a look at the difference between the time series with loudness and without it: 
 
-![with_loudness](/readme_images/with_loudness.png)
-![without_loudness](/readme_images/without_loudness.png)
 
 ## Step Three: Bask in the Glory of Normalized Data
 
@@ -244,26 +232,6 @@ This, to me, says that a negative AIC is fine, as we are still looking for the l
 ## Example Workflow Visualized: 
 
 If judging by lowest RMSE & similar RMSE between train & test groups, the best ARIMA model was the one made from the loudness time series. The following are the steps taken to build & forecast with this model:
-
-### Visualize the Time Series:
-
-![loudness_viz](/readme_images/loudness_viz.png)
-
-### Use auto_arima to find the best order & seasonal order (if it exists) for the ARIMA (or SARIMA) model
-
-![loudness_auto_arima](/readme_images/loudness_auto_arima.jpg)
-
-### Fit the Model, Examine Results, Examine Residuals
-
-![loudness_results](/readme_images/loudness_results.jpg)
-
-![loudness_errors](/readme_images/loudness_errors.png)
-
-### Validate with Train & Test RMSE
-
-![loudness_train_rmse](/readme_images/loudness_train_rmse.png)
-
-![loudness_test_rmse](/readme_images/loudness_test_rmse.png)
 
 If you are an artist looking to tap into features that don't necessarily correlate with popularity (think Top 40 Radio Hits) then this information may be pertinent in your decision-making for the direction of your music. 
 
@@ -341,39 +309,7 @@ Recurrent Neural Networks are neural networks that are adept at modeling sequenc
 - Finally, why use an LSTM instead of an ARIMA model for time series analysis? 
   - Simply put, an LSTM can use a lot more data to generate predictions than an ARIMA model. It won't always be more accurate but it is good to not solely rely on ARIMA during time series analysis. 
 
-# Apologies for the Lesson, on to our LSTM
 
-## First Step: Concatenate the Four DataFrames in df_ts (the 4 popular features' time series) and Build a Network with These Features
-
-![df_tss](/readme_images/df_tss.jpg)
-
-## Second Step: Use Alternative Code to Train-Test Split
-
-![alt_train_test](/readme_images/alt_train_test.jpg)
-
-This method received the same result as a normal train-test split, I just wanted to try using different code. 
-
-## Third Step: Write a Function to Create a Dataset for the X & y Train & Test
-
-This function is important because it involves time steps which will be key to our LSTM
-
-![create_dataset](/readme_images/create_dataset.jpg)
-
-## Fourth Step: Separate our Train & Test into X & y groups
-
-Our X's shape will be (samples, time_steps, features) and our y will only have (samples,)
-
-![x_y](/readme_images/x_y.jpg)
-
-## Build the Model:
-
-1. Because it is Time Series we will use the Sequential Method from Keras
-1. We will specify an LSTM for our Input Layer with 64 Units, we turn our return_sequences on, and we ensure a correct shape
-1. Our second layer will have 32 units
-1. Our Dropout layer is important as it will penalize a more complex model. We set it to 0.25.
-1. Finally our output layer will be Dense (1 Unit signifies this is our output layer)
-
-![lstm](/readme_images/lstm.jpg)
 
 ### Once the model is built, but before it is fit, we will compile the model.
 
@@ -383,7 +319,7 @@ Our X's shape will be (samples, time_steps, features) and our y will only have (
         - In other words, Adam provides an optimization algorithm that can handle sparse gradients on noisy problems. 
     - The learning rate is set to 0.01, the learning rate is a hyperparameter that controls how much to change the model in response to the estimated error each time the model weights are updated.
     
-![lstm_compile](/readme_images/lstm_compile.jpg)
+
 
 ## Let the LSTM magic begin! 
 
@@ -395,19 +331,16 @@ Our X's shape will be (samples, time_steps, features) and our y will only have (
     - Keras proportionally split your training set by the value of the variable. The first set is used for training and the 2nd set for validation after each epoch.
 - Shuffle is set to False because this is a time series model and so we want our data in order.
 
-![lstm_fit](/readme_images/lstm_fit.jpg)
+
 
 ### Model Train v. Validation Loss
 
-![train_v_val](/readme_images/train_v_val.png)
 
 It is a good sign to see overlap with our train & validation loss. After this we will visualize a prediction v. ground truth and then compare that visualization to the historic data. 
 
-![energy_prev_pred](/readme_images/energy_prev_pred.png)
 
 Here we can see that there is still some work to do to get our predictions accurate with ground truth however the end points of both our predictions and the truth are quite close which means this model is doing a pretty good job making its predictions. 
 
-![big_history_boi](/readme_images/big_history_boi.png)
 
 Looking at our model compared to historical data, it seems to follow the trend fairly well. I would put a solid amount of trust in it and with more experience in LSTMs I may one day choose them over ARIMAs. For now, however, I still remain more confident in the ARIMA time series models.
 
