@@ -52,13 +52,6 @@ If a track's popularity was between 0 and 49, the track's value for 'popular' wo
 
 22.6% of the values were classified as popular and 77.35% are classified unpopular. *This is a class imbalance issue so we will need to make sure our best model has a good AUC so that we know that it can tell the difference between the two classes. We will discuss this more later.*
 
-![class_imbalance](/readme_images/class_imbalance.jpg)
-
-### End of Preprocessing: Clean Up Columns & Examine Correlation
-
-After examining the class imbalance, I deleted any columns with non-numeric data as they would not be necessary to the classification analysis (their values can't be read by the models anyways). Additionally, I created a correlation table to look into how each column related to each other. 
-
-![correlation](/readme_images/correlation.png)
 
 ### Observations from Correlation:
 
@@ -164,14 +157,6 @@ Similarly to our situation with analyzing all features, the grid-searched random
 - **Analysis:**
     - Nearly highest in every category except recall (The Untuned Decision Tree has that honor) however this model is still the best for showing us which features will predict popularity because the AUC in this model is much higher and can therefore be trusted when it comes to differentiating between classes (Not Popular or Popular)
     
-- **Before we go:**
-
-Here is the progression of AUCs as told through three of the many models that were created. You will see the AUC for an untuned Decision Tree trained on all columns, a manually tuned decision tree trained on all columns, and our grid searched random forest that you saw above:
-
-![dt_auc](/readme_images/dt_auc.png)
-![dt_tune_auc](/readme_images/dt_tune_auc.png)
-![gs_all_AUC](/readme_images/auc_gs_ran_for.png)
-
 # What Comes Next?
 
 From our models, we must make a determination of which features to send out for time series analysis. I chose the top four features most likely to predict popularity as well as the fourth least likely to do so--these we will refer to as "niche" features. 
@@ -206,10 +191,6 @@ I created helper functions for:
 1. **Finding the Train & Test RMSE for Model Validation**
 1. **Forecasting Future Information**
 
-![helper_function_1](/readme_images/helper_function_1.jpg)
-![helper_function_2](/readme_images/helper_function_2.jpg)
-![helper_function_3](/readme_images/helper_function_3.jpg)
-![helper_function_4](/readme_images/helper_function_4.jpg)
 
 ## Step Two: Read in the Data & Transform Into Time Series 
 
@@ -224,13 +205,6 @@ When I plotted the initial time series of the new dataframes, it became clear ve
 
 ## Step Three: Bask in the Glory of Normalized Data
 
-With our dataframes normalized, let's take a look at them and see if we can gain preliminary understanding of their movement before we break each individual feature down into a time series: 
-
-![normalized](/readme_images/normalized.png)
-
-Here, it seems that loudness and energy are on the rise and have been since the 50s but have experienced a substantial rise since the 80s. This seems to correlate with the fall of acousticness which was very prevalent between 1920 and 1950. Ever since 1950, however, the prevalence of acousticness has shrunk substantially. Songs with a cheerful disposition (high **valence**) seem to have peaked in the 80s which would make sense given that decade as an era of disco & synth followed by the grunge & pop punk of the 90s. It may, however, be on the rise again.
-
-![normalized_niche](/readme_images/normalized_niche.png)
 
 As far as the niche features are concerned we can see, here, that songs with a *major scale* (**mode**) hit a peak between 1960 and 1970. Since that era, a majority of songs have steadily approached the minor scale with a peak in that regard in 2020. **Speechiness** had its heyday in the 1930s and hasn't reached the same peak since. It had its fall from grace post-1950s and, since then, we haven't seen too much of it until recently. **Tempo** had a major rise between the 60s and the 80s and then hit a bit of a dip between the 80s and 00s, and is now on the rise again! **Liveness** hasn't been seen too much since the late 70s & early 80s. 
 
@@ -238,15 +212,12 @@ As far as the niche features are concerned we can see, here, that songs with a *
 
 With everything visualized and given an initial analysis, I needed to get to work on separating these features and creating a time series for each. The first step of this was to change the column 'year' into DateTime Format--a format that can be read by the time series models--and I then needed to set the index as the datetime. Setting the index as the datetime removes the datetime from analysis and, rather, allows the target feature to be analyzed by the model with the indexed DateTime keeping our data in order! 
 
-![data_prep_ts](/readme_images/data_prep_ts.jpg)
 
 ## Step Five: Separate each column into its own time series
 
 With our data all prepped and ready to go the final step before modelling is to separate each feature into its own time series. The first step for this is to create a list of dataframes (one list for popular features and one list for niche features) and, from there, instantiate individual time series for each of the features.
 
-![pop_df](/readme_images/pop_df.jpg)
 
-![instantiate](/readme_images/instantiate.jpg)
 
 ## Step Six: Establish Workflow and Get to Work
 
@@ -293,30 +264,6 @@ If judging by lowest RMSE & similar RMSE between train & test groups, the best A
 ![loudness_train_rmse](/readme_images/loudness_train_rmse.png)
 
 ![loudness_test_rmse](/readme_images/loudness_test_rmse.png)
-
-### Forecast 
-
-![loudness_forecast](/readme_images/loudness_forecast.jpg)
-
-## Other Measures to Determine Best Model?
-
-If one was to visually examine the residuals and use this to determine a best model, that model would be the one built on the mode time series. Here is the residual analysis for that model--unfortunately the RMSE was considerably higher: train & test were both closer to 0.1 as opposed to the 0.048 from both the train & test RMSE of the loudness model. 
-
-![mode_errors](/readme_images/mode_errors.png)
-
-## Step Seven: When Finished Modelling, Compile Results and Give Conclusive Analysis: 
-
-While the big conclusion will come after we complete the LSTM analysis, the conclusions thus far are as follows: 
-
-### Conclusion for Popular Features: The prevalence of Loudness & Energy will grow the most of the 4 features that most likely predict popularity.
-
-![pop_features_analysis](/readme_images/pop_features_analysis.jpg)
-
-If you are an executive looking to emphasize certain features in the artists sponsored by your label, you may want to pursue these features if following trends is your thing however if you are looking to break the mold, investing in acoustic artists may be ideal as the prevalence of acousticness is quite low right now.
-
-### Conclusion for Niche Features: Include Speechiness & a Major Scale to stand out 
-
-![niche_features_analysis](/readme_images/niche_features_analysis.jpg)
 
 If you are an artist looking to tap into features that don't necessarily correlate with popularity (think Top 40 Radio Hits) then this information may be pertinent in your decision-making for the direction of your music. 
 
